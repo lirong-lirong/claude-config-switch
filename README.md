@@ -65,7 +65,12 @@ claude-switch run deepseek
 claude-switch run deepseek:reasoner
 
 # 使用指定配置和模型并传递参数给Claude Code
-claude-switch run deepseek:chat --help
+claude-switch run deepseek:chat --args "--help"
+
+# 传递多个参数给Claude Code
+claude-switch run deepseek --args "--permission-mode plan  --debug"
+
+echo "Hello" | claude-switch run deepseek --args "--print --debug"
 ```
 
 ### 自动补全功能
@@ -73,6 +78,24 @@ claude-switch run deepseek:chat --help
 - **配置名称**: 输入时自动补全可用配置
 - **模型名称**: 使用 `配置名:模型名` 格式自动补全
 - **安装补全**: `claude-switch --install-completion`
+
+### 传递参数给 Claude Code
+
+使用 `--args` 选项可以将参数传递给 Claude Code：
+
+```bash
+# 查看 Claude Code 帮助
+claude-switch run deepseek --args "--help"
+
+# 启用调试模式
+claude-switch run deepseek --args "--debug"
+
+# 传递多个参数
+claude-switch run deepseek --args "--debug --verbose"
+
+# 使用特定模型
+claude-switch run deepseek --args "--model deepseek-chat"
+```
 
 ### 添加配置
 

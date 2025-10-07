@@ -347,7 +347,7 @@ def set_default_model(
 @app.command(name="run")
 def use_config(
     config_model: Annotated[Optional[str], typer.Argument(help="配置:模型", autocompletion=complete_config_model_names)] = None,
-    claude_args: Annotated[Optional[List[str]], typer.Argument(help="传递给Claude Code的参数")] = None
+    args: Annotated[Optional[str], typer.Option(help="传递给Claude Code的参数")] = None
 ) -> None:
     """使用指定配置启动Claude Code（无参数时使用默认配置）"""
     
@@ -402,8 +402,10 @@ def use_config(
 
     # 构建Claude Code命令
     claude_command = ["claude"]
-    if claude_args:
-        claude_command.extend(claude_args)
+    if args:
+        # 使用 shlex.split 来正确处理带引号的参数
+        import shlex
+        claude_command.extend(shlex.split(args))
 
     try:
         # 启动Claude Code
