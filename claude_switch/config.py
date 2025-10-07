@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 
 
 @dataclass
@@ -26,12 +26,10 @@ class ClaudeConfig:
     timeout_ms: int = 600000
     disable_nonessential_traffic: bool = True
     description: str = ""
-    models: Dict[str, ModelConfig] = None
+    models: Dict[str, ModelConfig] = field(default_factory=dict)
     default_model: str = ""
 
     def __post_init__(self):
-        if self.models is None:
-            self.models = {}
         if not self.default_model and self.models:
             self.default_model = next(iter(self.models.keys()))
 
@@ -64,7 +62,7 @@ class ClaudeConfig:
         self.default_model = model_name
         return True
 
-    def to_env_vars(self, model_name: str = None) -> Dict[str, str]:
+    def to_env_vars(self, model_name: Optional[str] = None) -> Dict[str, str]:
         """将配置转换为环境变量字典"""
         if not model_name:
             model_name = self.default_model
@@ -96,6 +94,7 @@ class ConfigManager:
         self.config_dir.mkdir(parents=True, exist_ok=True)
 
         self._configs: Dict[str, ClaudeConfig] = {}
+        self._default_config: str = ""
         self._load_configs()
 
     def _load_configs(self):
@@ -104,7 +103,13 @@ class ConfigManager:
             try:
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    for name, config_data in data.items():
+
+                    # 提取默认配置
+                    self._default_config = data.get('default_config', '')
+
+                    # 加载配置数据
+                    configs_data = data.get('configs', {})
+                    for name, config_data in configs_data.items():
                         # 处理模型配置
                         models_data = config_data.pop('models', {})
                         config = ClaudeConfig(**config_data)
@@ -118,10 +123,14 @@ class ConfigManager:
             except (json.JSONDecodeError, KeyError, TypeError):
                 # 如果配置文件损坏，重新初始化
                 self._configs = {}
+                self._default_config = ""
 
     def _save_configs(self):
         """保存配置到文件"""
-        data = {name: asdict(config) for name, config in self._configs.items()}
+        data = {
+            'configs': {name: asdict(config) for name, config in self._configs.items()},
+            'default_config': self._default_config
+        }
         with open(self.config_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
@@ -160,3 +169,21 @@ class ConfigManager:
     def config_exists(self, name: str) -> bool:
         """检查配置是否存在"""
         return name in self._configs
+
+    def set_default_config(self, name: str) -> bool:
+        """设置默认配置"""
+        if name not in self._configs:
+            return False
+        self._default_config = name
+        self._save_configs()
+        return True
+
+    def get_default_config(self) -> Optional[ClaudeConfig]:
+        """获取默认配置"""
+        if not self._default_config or self._default_config not in self._configs:
+            return None
+        return self._configs[self._default_config]
+
+    def get_default_config_name(self) -> str:
+        """获取默认配置名称"""
+        return self._default_config

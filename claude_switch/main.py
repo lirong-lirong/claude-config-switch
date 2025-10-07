@@ -259,15 +259,24 @@ def set_default_model(
 
 @app.command(name="use")
 def use_config(
-    name: Annotated[str, typer.Argument(help="配置名称")],
+    name: Annotated[Optional[str], typer.Argument(help="配置名称")] = None,
     model: Annotated[Optional[str], typer.Option(help="指定模型名称")] = None,
     claude_args: Annotated[Optional[List[str]], typer.Argument(help="传递给Claude Code的参数")] = None
 ) -> None:
-    """使用指定配置启动Claude Code"""
-    config = config_manager.get_config(name)
-    if not config:
-        print(f"[red]✗[/red] 配置 '{name}' 不存在")
-        return
+    """使用指定配置启动Claude Code（无参数时使用默认配置）"""
+    # 如果没有指定配置名称，使用默认配置
+    if not name:
+        default_config = config_manager.get_default_config()
+        if not default_config:
+            print(f"[red]✗[/red] 未设置默认配置，请使用 'claude-switch use <配置名称>' 或先设置默认配置")
+            return
+        name = default_config.name
+        config = default_config
+    else:
+        config = config_manager.get_config(name)
+        if not config:
+            print(f"[red]✗[/red] 配置 '{name}' 不存在")
+            return
 
     if not config.models:
         print(f"[red]✗[/red] 配置 '{name}' 没有配置任何模型")
@@ -310,9 +319,31 @@ def use_config(
         print("\n[yellow]![/yellow] 已退出Claude Code")
 
 
+@app.command(name="default")
+def set_default_config(
+    name: Annotated[Optional[str], typer.Argument(help="配置名称")] = None
+) -> None:
+    """设置或显示默认配置"""
+    if not name:
+        # 显示当前默认配置
+        default_config = config_manager.get_default_config()
+        if default_config:
+            print(f"[green]✓[/green] 当前默认配置: '{default_config.name}'")
+        else:
+            print(f"[yellow]![/yellow] 未设置默认配置")
+        return
+
+    # 设置默认配置
+    if config_manager.set_default_config(name):
+        print(f"[green]✓[/green] 默认配置已设置为 '{name}'")
+    else:
+        print(f"[red]✗[/red] 配置 '{name}' 不存在")
+
+
 @app.command(name="current")
 def current_config() -> None:
-    """显示当前环境变量中的配置"""
+    """显示当前环境变量和默认配置"""
+    # 显示环境变量
     env_vars = {
         "ANTHROPIC_API_KEY": os.environ.get("ANTHROPIC_API_KEY"),
         "ANTHROPIC_BASE_URL": os.environ.get("ANTHROPIC_BASE_URL"),
@@ -333,6 +364,13 @@ def current_config() -> None:
         table.add_row(var_name, display_value)
 
     print(table)
+
+    # 显示默认配置信息
+    default_config = config_manager.get_default_config()
+    if default_config:
+        print(f"\n[green]✓[/green] 默认配置: '{default_config.name}'")
+    else:
+        print(f"\n[yellow]![/yellow] 未设置默认配置")
 
 
 def main():

@@ -156,6 +156,11 @@ claude-switch current
 
 ## 配置项说明
 
+配置文件结构：
+
+- `default_config`: 默认配置名称
+- `configs`: 配置字典，键为配置名称
+
 每个配置包含以下字段：
 
 - `name`: 配置名称（唯一标识）
@@ -197,57 +202,60 @@ claude-switch current
 
 ```json
 {
-  "deepseek": {
-    "name": "deepseek",
-    "api_key": "sk-xxx",
-    "base_url": "https://api.deepseek.com/anthropic",
-    "timeout_ms": 600000,
-    "disable_nonessential_traffic": true,
-    "description": "DeepSeek API",
-    "models": {
-      "chat": {
-        "name": "chat",
-        "model": "deepseek-chat",
-        "small_fast_model": "",
-        "description": "DeepSeek Chat模型"
+  "default_config": "deepseek",
+  "configs": {
+    "deepseek": {
+      "name": "deepseek",
+      "api_key": "sk-xxx",
+      "base_url": "https://api.deepseek.com/anthropic",
+      "timeout_ms": 600000,
+      "disable_nonessential_traffic": true,
+      "description": "DeepSeek API",
+      "models": {
+        "chat": {
+          "name": "chat",
+          "model": "deepseek-chat",
+          "small_fast_model": "",
+          "description": "DeepSeek Chat模型"
+        },
+        "reasoner": {
+          "name": "reasoner",
+          "model": "deepseek-reasoner",
+          "small_fast_model": "deepseek-chat",
+          "description": "DeepSeek Reasoner模型"
+        },
+        "coder": {
+          "name": "coder",
+          "model": "deepseek-coder",
+          "small_fast_model": "",
+          "description": "DeepSeek Coder模型"
+        }
       },
-      "reasoner": {
-        "name": "reasoner",
-        "model": "deepseek-reasoner",
-        "small_fast_model": "deepseek-chat",
-        "description": "DeepSeek Reasoner模型"
-      },
-      "coder": {
-        "name": "coder",
-        "model": "deepseek-coder",
-        "small_fast_model": "",
-        "description": "DeepSeek Coder模型"
-      }
+      "default_model": "reasoner"
     },
-    "default_model": "reasoner"
-  },
-  "anthropic": {
-    "name": "anthropic",
-    "api_key": "sk-ant-xxx",
-    "base_url": "https://api.anthropic.com",
-    "timeout_ms": 600000,
-    "disable_nonessential_traffic": true,
-    "description": "Anthropic官方API",
-    "models": {
-      "sonnet": {
-        "name": "sonnet",
-        "model": "claude-3-5-sonnet-20241022",
-        "small_fast_model": "claude-3-haiku-20240307",
-        "description": "Claude 3.5 Sonnet"
+    "anthropic": {
+      "name": "anthropic",
+      "api_key": "sk-ant-xxx",
+      "base_url": "https://api.anthropic.com",
+      "timeout_ms": 600000,
+      "disable_nonessential_traffic": true,
+      "description": "Anthropic官方API",
+      "models": {
+        "sonnet": {
+          "name": "sonnet",
+          "model": "claude-3-5-sonnet-20241022",
+          "small_fast_model": "claude-3-haiku-20240307",
+          "description": "Claude 3.5 Sonnet"
+        },
+        "opus": {
+          "name": "opus",
+          "model": "claude-3-opus-20240229",
+          "small_fast_model": "claude-3-haiku-20240307",
+          "description": "Claude 3 Opus"
+        }
       },
-      "opus": {
-        "name": "opus",
-        "model": "claude-3-opus-20240229",
-        "small_fast_model": "claude-3-haiku-20240307",
-        "description": "Claude 3 Opus"
-      }
-    },
-    "default_model": "sonnet"
+      "default_model": "sonnet"
+    }
   }
 }
 ```
