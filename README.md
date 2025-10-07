@@ -24,26 +24,7 @@ cd claude-code-switch
 
 # 一键安装（自动配置环境变量）
 ./install.sh
-
-# 安装自动补全
-./install_completion.sh
 ```
-
-### 手动安装
-
-1. 克隆项目：
-
-```bash
-git clone <repository-url>
-cd claude-code-switch
-```
-
-2. 安装到系统：
-
-```bash
-pip install -e .
-```
-
 
 ### 自动补全
 
@@ -55,6 +36,9 @@ source ~/.zshrc
 
 # Bash
 source ~/.bashrc
+
+# 自动补全
+claude-switch --install-completion
 ```
 
 ### 环境变量设置（自动配置）

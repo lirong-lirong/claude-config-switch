@@ -3,7 +3,7 @@
  # @Author: lirong lirongleiyang@163.com
  # @Date: 2025-10-07 18:57:53
  # @LastEditors: lirong lirongleiyang@163.com
- # @LastEditTime: 2025-10-07 19:05:31
+ # @LastEditTime: 2025-10-07 20:10:48
  # @FilePath: /claude-code-switch/install.sh
  # @Description: 
  # 
@@ -67,7 +67,7 @@ if [ $? -eq 0 ]; then
     echo "📝 使用方法:"
     echo "   claude-switch --help"
     echo ""
-    echo "💡 提示: 重启终端或运行 'source ~/.bashrc' (或 ~/.zshrc) 使配置生效"
+    echo "💡 提示: 重启终端或运行 'source ~/.bashrc' (或 source ~/.zshrc) 使配置生效"
 else
     echo "❌ 安装失败"
     exit 1

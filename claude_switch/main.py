@@ -12,8 +12,44 @@ from rich.table import Table
 
 from .config import ConfigManager, ClaudeConfig, ModelConfig
 
-app = typer.Typer(no_args_is_help=True, help="Claude Code Config Switch")
+app = typer.Typer(no_args_is_help=True, help="Claude Code Config Switch", rich_markup_mode="rich")
 config_manager = ConfigManager()
+
+
+def complete_config_names(incomplete: str):
+    """为配置名称提供自动补全"""
+    configs = config_manager.list_configs()
+    for config in configs:
+        if config.name.startswith(incomplete):
+            yield (config.name, config.description or f"API URL: {config.base_url}")
+
+
+def complete_model_names(ctx: typer.Context, incomplete: str):
+    """为模型名称提供自动补全"""
+    # 从上下文中获取配置名称
+    config_name = None
+
+    # 尝试从命令行参数中获取配置名称
+    if ctx.params:
+        config_name = ctx.params.get("config_name") or ctx.params.get("name")
+
+    # 如果没有找到配置名称，返回空列表
+    if not config_name:
+        return []
+
+    # 获取配置
+    config = config_manager.get_config(config_name)
+    if not config or not config.models:
+        return []
+
+    # 返回匹配的模型名称
+    for model_name, model_config in config.models.items():
+        if model_name.startswith(incomplete):
+            is_default = " (默认)" if model_name == config.default_model else ""
+            help_text = f"{model_config.model}{is_default}"
+            if model_config.description:
+                help_text = f"{help_text} - {model_config.description}"
+            yield (model_name, help_text)
 
 
 @app.command(name="add")
@@ -25,7 +61,13 @@ def add_config(
     disable_nonessential_traffic: Annotated[bool, typer.Option(help="禁用非必要流量")] = True,
     description: Annotated[str, typer.Option(help="配置描述")] = ""
 ) -> None:
-    """添加新的Claude Code配置"""
+    """[bold green]添加新的Claude Code配置[/bold green]
+
+    创建一个新的API配置，支持多个模型和提供商。
+
+    [bold]示例:[/bold]
+    claude-switch add deepseek --api-key sk-xxx --base-url https://api.deepseek.com/anthropic
+    """
     config = ClaudeConfig(
         name=name,
         api_key=api_key,
@@ -43,7 +85,13 @@ def add_config(
 
 @app.command(name="list")
 def list_configs() -> None:
-    """列出所有配置"""
+    """[bold green]列出所有配置[/bold green]
+
+    显示所有已保存的API配置及其详细信息。
+
+    [bold]示例:[/bold]
+    claude-switch list
+    """
     configs = config_manager.list_configs()
 
     if not configs:
@@ -73,7 +121,7 @@ def list_configs() -> None:
 
 @app.command(name="remove")
 def remove_config(
-    name: Annotated[str, typer.Argument(help="配置名称")]
+    name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)]
 ) -> None:
     """删除配置"""
     if config_manager.remove_config(name):
@@ -84,7 +132,7 @@ def remove_config(
 
 @app.command(name="edit")
 def edit_config(
-    name: Annotated[str, typer.Argument(help="配置名称")],
+    name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)],
     api_key: Annotated[Optional[str], typer.Option(help="API密钥")] = None,
     base_url: Annotated[Optional[str], typer.Option(help="API基础URL")] = None,
     timeout_ms: Annotated[Optional[int], typer.Option(help="超时时间(毫秒)")] = None,
@@ -117,7 +165,7 @@ def edit_config(
 
 @app.command(name="show")
 def show_config(
-    name: Annotated[str, typer.Argument(help="配置名称")]
+    name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)]
 ) -> None:
     """显示配置详情"""
     config = config_manager.get_config(name)
@@ -160,7 +208,7 @@ def show_config(
 
 @app.command(name="model-add")
 def add_model(
-    config_name: Annotated[str, typer.Argument(help="配置名称")],
+    config_name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)],
     model_name: Annotated[str, typer.Argument(help="模型名称")],
     model_id: Annotated[str, typer.Option(help="模型ID")],
     small_fast_model: Annotated[str, typer.Option(help="快速小模型ID")] = "",
@@ -191,8 +239,8 @@ def add_model(
 
 @app.command(name="model-remove")
 def remove_model(
-    config_name: Annotated[str, typer.Argument(help="配置名称")],
-    model_name: Annotated[str, typer.Argument(help="模型名称")]
+    config_name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)],
+    model_name: Annotated[str, typer.Argument(help="模型名称", autocompletion=complete_model_names)]
 ) -> None:
     """从配置中删除模型"""
     config = config_manager.get_config(config_name)
@@ -209,7 +257,7 @@ def remove_model(
 
 @app.command(name="model-list")
 def list_models(
-    config_name: Annotated[str, typer.Argument(help="配置名称")]
+    config_name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)]
 ) -> None:
     """列出配置中的所有模型"""
     config = config_manager.get_config(config_name)
@@ -241,8 +289,8 @@ def list_models(
 
 @app.command(name="model-set-default")
 def set_default_model(
-    config_name: Annotated[str, typer.Argument(help="配置名称")],
-    model_name: Annotated[str, typer.Argument(help="模型名称")]
+    config_name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)],
+    model_name: Annotated[str, typer.Argument(help="模型名称", autocompletion=complete_model_names)]
 ) -> None:
     """设置配置的默认模型"""
     config = config_manager.get_config(config_name)
@@ -259,8 +307,8 @@ def set_default_model(
 
 @app.command(name="use")
 def use_config(
-    name: Annotated[Optional[str], typer.Argument(help="配置名称")] = None,
-    model: Annotated[Optional[str], typer.Option(help="指定模型名称")] = None,
+    name: Annotated[Optional[str], typer.Argument(help="配置名称", autocompletion=complete_config_names)] = None,
+    model: Annotated[Optional[str], typer.Option(help="指定模型名称", autocompletion=complete_model_names)] = None,
     claude_args: Annotated[Optional[List[str]], typer.Argument(help="传递给Claude Code的参数")] = None
 ) -> None:
     """使用指定配置启动Claude Code（无参数时使用默认配置）"""
@@ -321,7 +369,7 @@ def use_config(
 
 @app.command(name="default")
 def set_default_config(
-    name: Annotated[Optional[str], typer.Argument(help="配置名称")] = None
+    name: Annotated[Optional[str], typer.Argument(help="配置名称", autocompletion=complete_config_names)] = None
 ) -> None:
     """设置或显示默认配置"""
     if not name:
