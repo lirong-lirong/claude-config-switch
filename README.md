@@ -62,7 +62,14 @@ source ~/.zshrc  # 或 source ~/.bashrc
 
 ## 使用方法
 
-**推荐直接通过修改 `~/.config/claude-code-switch/config.json` 来更新配置**
+**推荐使用 `claude-switch edit` 命令直接编辑配置文件**
+
+```bash
+# 快速开始：编辑配置文件
+claude-switch edit
+```
+
+如果配置文件不存在，会自动创建包含完整示例配置的文件，包含 deepseek 和 anthropic 两个配置示例，可以直接修改其中的 API 密钥等信息。
 
 ### 使用配置启动Claude Code
 
@@ -167,7 +174,11 @@ claude-switch show deepseek
 ### 编辑配置
 
 ```bash
-claude-switch edit deepseek --model deepseek-reasoner
+# 使用vim直接编辑配置文件（推荐）
+claude-switch edit
+
+# 如果配置文件不存在，会自动创建包含示例配置的文件
+# 包含deepseek和anthropic两个完整配置示例
 ```
 
 ### 删除配置

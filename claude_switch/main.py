@@ -169,36 +169,27 @@ def remove_config(
 
 
 @app.command(name="edit")
-def edit_config(
-    name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)],
-    api_key: Annotated[Optional[str], typer.Option(help="API密钥")] = None,
-    base_url: Annotated[Optional[str], typer.Option(help="API基础URL")] = None,
-    timeout_ms: Annotated[Optional[int], typer.Option(help="超时时间(毫秒)")] = None,
-    disable_nonessential_traffic: Annotated[Optional[bool], typer.Option(help="禁用非必要流量")] = None,
-    description: Annotated[Optional[str], typer.Option(help="配置描述")] = None
-) -> None:
-    """编辑配置"""
-    config = config_manager.get_config(name)
-    if not config:
-        print(f"[red]✗[/red] 配置 '{name}' 不存在")
-        return
+def edit_config() -> None:
+    """使用vim编辑配置文件"""
+    config_file = config_manager.get_config_file_path()
 
-    # 更新配置
-    if api_key is not None:
-        config.api_key = api_key
-    if base_url is not None:
-        config.base_url = base_url
-    if timeout_ms is not None:
-        config.timeout_ms = timeout_ms
-    if disable_nonessential_traffic is not None:
-        config.disable_nonessential_traffic = disable_nonessential_traffic
-    if description is not None:
-        config.description = description
+    if not os.path.exists(config_file):
+        print(f"[yellow]![/yellow] 配置文件不存在，创建包含示例配置的新文件: {config_file}")
+        # 确保目录存在
+        os.makedirs(os.path.dirname(config_file), exist_ok=True)
+        # 创建包含示例配置的文件
+        config_manager.create_example_config()
 
-    if config_manager.update_config(config):
-        print(f"[green]✓[/green] 配置 '{name}' 更新成功")
-    else:
-        print(f"[red]✗[/red] 配置 '{name}' 更新失败")
+    print(f"[green]→[/green] 使用vim打开配置文件: {config_file}")
+    try:
+        subprocess.run(["vim", config_file])
+        print(f"[green]✓[/green] 配置文件编辑完成")
+    except FileNotFoundError:
+        print(f"[red]✗[/red] 未找到vim编辑器，请确保vim已安装")
+    except KeyboardInterrupt:
+        print("\n[yellow]![/yellow] 已退出vim编辑")
+
+
 
 
 @app.command(name="show")

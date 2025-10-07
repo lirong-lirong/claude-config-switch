@@ -187,3 +187,75 @@ class ConfigManager:
     def get_default_config_name(self) -> str:
         """获取默认配置名称"""
         return self._default_config
+
+    def get_config_file_path(self) -> str:
+        """获取配置文件路径"""
+        return str(self.config_file)
+
+    def save_configs(self):
+        """保存配置到文件（公开方法）"""
+        self._save_configs()
+        
+    def create_example_config(self) -> None:
+        """创建包含示例配置的文件"""
+        example_config = {
+            "default_config": "deepseek",
+            "configs": {
+                "deepseek": {
+                    "name": "deepseek",
+                    "api_key": "sk-xxx",
+                    "base_url": "https://api.deepseek.com/anthropic",
+                    "timeout_ms": 600000,
+                    "disable_nonessential_traffic": True,
+                    "description": "DeepSeek API",
+                    "models": {
+                        "chat": {
+                            "name": "chat",
+                            "model": "deepseek-chat",
+                            "small_fast_model": "",
+                            "description": "DeepSeek Chat模型"
+                        },
+                        "reasoner": {
+                            "name": "reasoner",
+                            "model": "deepseek-reasoner",
+                            "small_fast_model": "deepseek-chat",
+                            "description": "DeepSeek Reasoner模型"
+                        },
+                        "coder": {
+                            "name": "coder",
+                            "model": "deepseek-coder",
+                            "small_fast_model": "",
+                            "description": "DeepSeek Coder模型"
+                        }
+                    },
+                    "default_model": "reasoner"
+                },
+                "anthropic": {
+                    "name": "anthropic",
+                    "api_key": "sk-ant-xxx",
+                    "base_url": "https://api.anthropic.com",
+                    "timeout_ms": 600000,
+                    "disable_nonessential_traffic": True,
+                    "description": "Anthropic官方API",
+                    "models": {
+                        "sonnet": {
+                            "name": "sonnet",
+                            "model": "claude-3-5-sonnet-20241022",
+                            "small_fast_model": "claude-3-haiku-20240307",
+                            "description": "Claude 3.5 Sonnet"
+                        },
+                        "opus": {
+                            "name": "opus",
+                            "model": "claude-3-opus-20240229",
+                            "small_fast_model": "claude-3-haiku-20240307",
+                            "description": "Claude 3 Opus"
+                        }
+                    },
+                    "default_model": "sonnet"
+                }
+            }
+        }
+
+        import json
+        with open(self.config_file, 'w', encoding='utf-8') as f:
+            json.dump(example_config, f, indent=2, ensure_ascii=False)
