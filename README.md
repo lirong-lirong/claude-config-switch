@@ -53,6 +53,8 @@ source ~/.zshrc  # 或 source ~/.bashrc
 
 ## 使用方法
 
+**推荐直接编辑配置文件来修改配置**
+
 ### 添加配置
 
 ```bash
@@ -99,13 +101,13 @@ claude-switch model-list deepseek
 
 ```bash
 # 使用默认模型启动
-claude-switch use deepseek
+claude-switch run deepseek
 
 # 使用指定模型启动
-claude-switch use deepseek --model reasoner
+claude-switch run deepseek --model reasoner
 
 # 使用指定模型并传递参数给Claude Code
-claude-switch use deepseek --model chat --help
+claude-switch run deepseek --model chat --help
 ```
 
 ### 设置默认模型
@@ -243,7 +245,3 @@ claude-switch current
   }
 }
 ```
-
-## 许可证
-
-MIT License

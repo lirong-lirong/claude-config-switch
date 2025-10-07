@@ -24,32 +24,34 @@ def complete_config_names(incomplete: str):
             yield (config.name, config.description or f"API URL: {config.base_url}")
 
 
-def complete_model_names(ctx: typer.Context, incomplete: str):
+def complete_model_names(incomplete: str):
     """为模型名称提供自动补全"""
-    # 从上下文中获取配置名称
-    config_name = None
+    # 简化版本：返回所有可能的模型名称
 
-    # 尝试从命令行参数中获取配置名称
-    if ctx.params:
-        config_name = ctx.params.get("config_name") or ctx.params.get("name")
+    # 获取所有配置
+    configs = config_manager.list_configs()
 
-    # 如果没有找到配置名称，返回空列表
-    if not config_name:
-        return []
+    # 收集所有模型名称
+    all_models = []
+    for config in configs:
+        if config.models:
+            for model_name, model_config in config.models.items():
+                is_default = " (默认)" if model_name == config.default_model else ""
+                help_text = f"{model_config.model}{is_default}"
+                if model_config.description:
+                    help_text = f"{help_text} - {model_config.description}"
+                all_models.append((model_name, help_text))
 
-    # 获取配置
-    config = config_manager.get_config(config_name)
-    if not config or not config.models:
-        return []
-
-    # 返回匹配的模型名称
-    for model_name, model_config in config.models.items():
-        if model_name.startswith(incomplete):
-            is_default = " (默认)" if model_name == config.default_model else ""
-            help_text = f"{model_config.model}{is_default}"
-            if model_config.description:
-                help_text = f"{help_text} - {model_config.description}"
+    # 过滤匹配的模型
+    if not incomplete:
+        # 没有输入时返回所有模型
+        for model_name, help_text in all_models:
             yield (model_name, help_text)
+    else:
+        # 有输入时返回匹配的模型
+        for model_name, help_text in all_models:
+            if model_name.startswith(incomplete):
+                yield (model_name, help_text)
 
 
 @app.command(name="add")
@@ -84,6 +86,7 @@ def add_config(
 
 
 @app.command(name="list")
+@app.command(name="ls")
 def list_configs() -> None:
     """[bold green]列出所有配置[/bold green]
 
@@ -91,6 +94,7 @@ def list_configs() -> None:
 
     [bold]示例:[/bold]
     claude-switch list
+    claude-switch ls
     """
     configs = config_manager.list_configs()
 
@@ -120,6 +124,7 @@ def list_configs() -> None:
 
 
 @app.command(name="remove")
+@app.command(name="rm")
 def remove_config(
     name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)]
 ) -> None:
@@ -305,7 +310,7 @@ def set_default_model(
         print(f"[red]✗[/red] 模型 '{model_name}' 不存在于配置 '{config_name}'")
 
 
-@app.command(name="use")
+@app.command(name="run")
 def use_config(
     name: Annotated[Optional[str], typer.Argument(help="配置名称", autocompletion=complete_config_names)] = None,
     model: Annotated[Optional[str], typer.Option(help="指定模型名称", autocompletion=complete_model_names)] = None,
@@ -316,7 +321,7 @@ def use_config(
     if not name:
         default_config = config_manager.get_default_config()
         if not default_config:
-            print(f"[red]✗[/red] 未设置默认配置，请使用 'claude-switch use <配置名称>' 或先设置默认配置")
+            print(f"[red]✗[/red] 未设置默认配置，请使用 'claude-switch run <配置名称>' 或先设置默认配置")
             return
         name = default_config.name
         config = default_config
