@@ -73,6 +73,7 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "📝 使用方法:"
     echo "   claude-switch --help"
+    echo "   ccs --help (简短别名)"
     echo ""
     echo "💡 提示: 重启终端或运行 'source ~/.bashrc' (或 source ~/.zshrc) 使配置生效"
 else

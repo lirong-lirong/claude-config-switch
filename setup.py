@@ -22,6 +22,7 @@ setup(
     entry_points={
         "console_scripts": [
             "claude-switch=claude_switch.main:app",
+            "ccs=claude_switch.main:app",
         ],
     },
     author="lirong",

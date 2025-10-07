@@ -38,9 +38,21 @@ source ~/.zshrc
 source ~/.bashrc
 ```
 
+### 命令别名
+
+除了 `claude-switch` 命令外，还提供了简短的别名 `ccs`，两者功能完全相同：
+
+```bash
+# 使用完整命令
+claude-switch list
+
+# 使用简短别名
+ccs list
+```
+
 ### 环境变量设置（自动配置）
 
-安装脚本会自动检测并配置 Python 用户 bin 目录到 PATH 中。如果安装后 `claude-switch` 命令仍然找不到，请运行：
+安装脚本会自动检测并配置 Python 用户 bin 目录到 PATH 中。如果安装后 `claude-switch` 或 `ccs` 命令仍然找不到，请运行：
 
 ```bash
 source ~/.zshrc  # 或 source ~/.bashrc
