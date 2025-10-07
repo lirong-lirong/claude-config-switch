@@ -361,7 +361,13 @@ def use_config(
         config_name = default_config.name
         config = default_config
     else:
-        [config_name, model] = config_model.split(":", 1)
+        # 处理 config:model 格式或仅配置名称
+        if ":" in config_model:
+            config_name, model = config_model.split(":", 1)
+        else:
+            config_name = config_model
+            model = None
+
         config = config_manager.get_config(config_name)
         if not config:
             print(f"[red]✗[/red] 配置 '{config_name}' 不存在")

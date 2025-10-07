@@ -50,7 +50,23 @@ source ~/.zshrc  # 或 source ~/.bashrc
 
 ## 使用方法
 
-**推荐使用命令行操作，支持自动补全**
+**推荐直接通过修改 `~/.config/claude-code-switch/config.json` 来更新配置**
+
+### 使用配置启动Claude Code
+
+```bash
+# 使用默认配置和默认模型启动
+claude-switch run
+
+# 使用指定配置的默认模型启动
+claude-switch run deepseek
+
+# 使用指定配置和指定模型启动（支持自动补全）
+claude-switch run deepseek:reasoner
+
+# 使用指定配置和模型并传递参数给Claude Code
+claude-switch run deepseek:chat --help
+```
 
 ### 自动补全功能
 
@@ -98,22 +114,6 @@ claude-switch list
 
 ```bash
 claude-switch model-list deepseek
-```
-
-### 使用配置启动Claude Code
-
-```bash
-# 使用默认配置和默认模型启动
-claude-switch run
-
-# 使用指定配置的默认模型启动
-claude-switch run deepseek
-
-# 使用指定配置和指定模型启动（支持自动补全）
-claude-switch run deepseek:reasoner
-
-# 使用指定配置和模型并传递参数给Claude Code
-claude-switch run deepseek:chat --help
 ```
 
 ### 设置默认模型
