@@ -3,7 +3,7 @@
  # @Author: lirong lirongleiyang@163.com
  # @Date: 2025-10-07 18:57:53
  # @LastEditors: lirong lirongleiyang@163.com
- # @LastEditTime: 2025-10-07 20:10:48
+ # @LastEditTime: 2025-10-07 22:51:33
  # @FilePath: /claude-code-switch/install.sh
  # @Description: 
  # 
@@ -61,6 +61,13 @@ if [ $? -eq 0 ]; then
         fi
     else
         echo "✅ PATH已包含Python用户bin目录"
+    fi
+    echo "🔧 安装自动补全..."
+
+    if claude-switch --install-completion; then
+        echo "✅ 自动补全安装成功"
+    else
+        echo "⚠️  自动补全安装失败，请手动运行: claude-switch --install-completion"
     fi
 
     echo ""

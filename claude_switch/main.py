@@ -9,24 +9,23 @@ from typing import Optional, List
 from typing_extensions import Annotated
 from rich import print
 from rich.table import Table
+from rich.console import Console
 
 from .config import ConfigManager, ClaudeConfig, ModelConfig
 
 app = typer.Typer(no_args_is_help=True, help="Claude Code Config Switch", rich_markup_mode="rich")
 config_manager = ConfigManager()
-
+err_console = Console(stderr=True)
 
 def complete_config_names(incomplete: str):
     """为配置名称提供自动补全"""
     configs = config_manager.list_configs()
     for config in configs:
         if config.name.startswith(incomplete):
-            yield (config.name, config.description or f"API URL: {config.base_url}")
-
+            yield (config.name, config.description or f"API URL: {config.base_url}")        
 
 def complete_model_names(incomplete: str):
     """为模型名称提供自动补全"""
-    # 简化版本：返回所有可能的模型名称
 
     # 获取所有配置
     configs = config_manager.list_configs()
@@ -36,12 +35,14 @@ def complete_model_names(incomplete: str):
     for config in configs:
         if config.models:
             for model_name, model_config in config.models.items():
+                unique_name = f"{config.name}:{model_name}"  
                 is_default = " (默认)" if model_name == config.default_model else ""
                 help_text = f"{model_config.model}{is_default}"
                 if model_config.description:
                     help_text = f"{help_text} - {model_config.description}"
-                all_models.append((model_name, help_text))
-
+                all_models.append((unique_name, help_text))
+                
+    # err_console.print(f"{all_models}")
     # 过滤匹配的模型
     if not incomplete:
         # 没有输入时返回所有模型
@@ -53,6 +54,38 @@ def complete_model_names(incomplete: str):
             if model_name.startswith(incomplete):
                 yield (model_name, help_text)
 
+
+def complete_config_model_names(incomplete: str):
+    """为模型名称提供自动补全
+        默认输入格式为 [config_name]:[model_name]
+    """
+    # 返回所有可能的模型名称
+    # 获取所有配置
+    configs = config_manager.list_configs()
+
+    # 收集所有模型名称
+    all_models = []
+    for config in configs:
+        if config.models:
+            for model_name, model_config in config.models.items():
+                unique_name = f"{config.name}:{model_name}"  
+                is_default = " (默认)" if model_name == config.default_model else ""
+                help_text = f"{model_config.model}{is_default}"
+                if model_config.description:
+                    help_text = f"{help_text} - {model_config.description}"
+                all_models.append((unique_name, help_text))
+                
+    # err_console.print(f"{all_models}")
+    # 过滤匹配的模型
+    if not incomplete:
+        # 没有输入时返回所有模型
+        for model_name, help_text in all_models:
+            yield (model_name, help_text)
+    else:
+        # 有输入时返回匹配的模型
+        for model_name, help_text in all_models:
+            if model_name.startswith(incomplete):
+                yield (model_name, help_text)
 
 @app.command(name="add")
 def add_config(
@@ -244,10 +277,10 @@ def add_model(
 
 @app.command(name="model-remove")
 def remove_model(
-    config_name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)],
-    model_name: Annotated[str, typer.Argument(help="模型名称", autocompletion=complete_model_names)]
+    config_model: Annotated[str, typer.Argument(help="配置:模型", autocompletion=complete_config_model_names)]
 ) -> None:
     """从配置中删除模型"""
+    config_name, model_name = config_model.split(':', 1)
     config = config_manager.get_config(config_name)
     if not config:
         print(f"[red]✗[/red] 配置 '{config_name}' 不存在")
@@ -294,10 +327,10 @@ def list_models(
 
 @app.command(name="model-set-default")
 def set_default_model(
-    config_name: Annotated[str, typer.Argument(help="配置名称", autocompletion=complete_config_names)],
-    model_name: Annotated[str, typer.Argument(help="模型名称", autocompletion=complete_model_names)]
+    config_model: Annotated[str, typer.Argument(help="配置:模型", autocompletion=complete_config_model_names)]
 ) -> None:
     """设置配置的默认模型"""
+    config_name, model_name = config_model.split(':', 1)
     config = config_manager.get_config(config_name)
     if not config:
         print(f"[red]✗[/red] 配置 '{config_name}' 不存在")
@@ -310,36 +343,39 @@ def set_default_model(
         print(f"[red]✗[/red] 模型 '{model_name}' 不存在于配置 '{config_name}'")
 
 
+
 @app.command(name="run")
 def use_config(
-    name: Annotated[Optional[str], typer.Argument(help="配置名称", autocompletion=complete_config_names)] = None,
-    model: Annotated[Optional[str], typer.Option(help="指定模型名称", autocompletion=complete_model_names)] = None,
+    config_model: Annotated[Optional[str], typer.Argument(help="配置:模型", autocompletion=complete_config_model_names)] = None,
     claude_args: Annotated[Optional[List[str]], typer.Argument(help="传递给Claude Code的参数")] = None
 ) -> None:
     """使用指定配置启动Claude Code（无参数时使用默认配置）"""
+    
+    model: Optional[str] = None
     # 如果没有指定配置名称，使用默认配置
-    if not name:
+    if not config_model:
         default_config = config_manager.get_default_config()
         if not default_config:
             print(f"[red]✗[/red] 未设置默认配置，请使用 'claude-switch run <配置名称>' 或先设置默认配置")
             return
-        name = default_config.name
+        config_name = default_config.name
         config = default_config
     else:
-        config = config_manager.get_config(name)
+        [config_name, model] = config_model.split(":", 1)
+        config = config_manager.get_config(config_name)
         if not config:
-            print(f"[red]✗[/red] 配置 '{name}' 不存在")
+            print(f"[red]✗[/red] 配置 '{config_name}' 不存在")
             return
 
     if not config.models:
-        print(f"[red]✗[/red] 配置 '{name}' 没有配置任何模型")
+        print(f"[red]✗[/red] 配置 '{config_name}' 没有配置任何模型")
         return
 
     # 如果没有指定模型，使用默认模型
     if not model:
         model = config.default_model
 
-    print(f"[green]→[/green] 使用配置 '{name}' 模型 '{model}' 启动Claude Code...")
+    print(f"[green]→[/green] 使用配置 '{config_name}' 模型 '{model}' 启动Claude Code...")
 
     # 设置环境变量
     try:

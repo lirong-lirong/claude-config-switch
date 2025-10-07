@@ -1,4 +1,4 @@
-# Claude Code切换器
+# Claude Code Switch
 
 一个Python命令行工具，用于管理多个Claude Code API配置并快速切换环境变量启动Claude Code。
 
@@ -22,7 +22,7 @@
 git clone <repository-url>
 cd claude-code-switch
 
-# 一键安装（自动配置环境变量）
+# 一键安装（自动配置环境变量、命令行补全）
 ./install.sh
 ```
 
@@ -36,9 +36,6 @@ source ~/.zshrc
 
 # Bash
 source ~/.bashrc
-
-# 自动补全
-claude-switch --install-completion
 ```
 
 ### 环境变量设置（自动配置）
@@ -53,7 +50,13 @@ source ~/.zshrc  # 或 source ~/.bashrc
 
 ## 使用方法
 
-**推荐直接编辑配置文件来修改配置**
+**推荐使用命令行操作，支持自动补全**
+
+### 自动补全功能
+
+- **配置名称**: 输入时自动补全可用配置
+- **模型名称**: 使用 `配置名:模型名` 格式自动补全
+- **安装补全**: `claude-switch --install-completion`
 
 ### 添加配置
 
@@ -100,20 +103,24 @@ claude-switch model-list deepseek
 ### 使用配置启动Claude Code
 
 ```bash
-# 使用默认模型启动
+# 使用默认配置和默认模型启动
+claude-switch run
+
+# 使用指定配置的默认模型启动
 claude-switch run deepseek
 
-# 使用指定模型启动
-claude-switch run deepseek --model reasoner
+# 使用指定配置和指定模型启动（支持自动补全）
+claude-switch run deepseek:reasoner
 
-# 使用指定模型并传递参数给Claude Code
-claude-switch run deepseek --model chat --help
+# 使用指定配置和模型并传递参数给Claude Code
+claude-switch run deepseek:chat --help
 ```
 
 ### 设置默认模型
 
 ```bash
-claude-switch model-set-default deepseek reasoner
+# 使用配置:模型格式（支持自动补全）
+claude-switch model-set-default deepseek:reasoner
 ```
 
 ### 查看配置详情
@@ -132,6 +139,13 @@ claude-switch edit deepseek --model deepseek-reasoner
 
 ```bash
 claude-switch remove deepseek
+```
+
+### 删除模型
+
+```bash
+# 使用配置:模型格式（支持自动补全）
+claude-switch model-remove deepseek:chat
 ```
 
 ### 查看当前环境变量
