@@ -2,11 +2,9 @@
 Claude Code配置管理模块
 """
 import json
-import os
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict, field
-
 
 @dataclass
 class ModelConfig:
@@ -259,3 +257,5 @@ class ConfigManager:
         import json
         with open(self.config_file, 'w', encoding='utf-8') as f:
             json.dump(example_config, f, indent=2, ensure_ascii=False)
+            
+config_manager = ConfigManager()

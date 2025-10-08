@@ -65,9 +65,16 @@ if [ $? -eq 0 ]; then
     echo "🔧 安装自动补全..."
 
     if claude-switch --install-completion; then
-        echo "✅ 自动补全安装成功"
+        echo "✅ claude-switch 自动补全安装成功"
     else
-        echo "⚠️  自动补全安装失败，请手动运行: claude-switch --install-completion"
+        echo "⚠️  claude-switch 自动补全安装失败，请手动运行: claude-switch --install-completion"
+    fi
+
+    # 为 ccs 别名也安装补全
+    if ccs --install-completion; then
+        echo "✅ ccs 自动补全安装成功"
+    else
+        echo "⚠️  ccs 自动补全安装失败，请手动运行: ccs --install-completion"
     fi
 
     echo ""
