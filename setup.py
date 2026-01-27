@@ -19,6 +19,13 @@ setup(
         "rich",
         "python-dotenv",
     ],
+    extras_require={
+        "test": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "pytest-mock>=3.10.0",
+        ],
+    },
     entry_points={
         "console_scripts": [
             "claude-switch=claude_switch.main:app",
