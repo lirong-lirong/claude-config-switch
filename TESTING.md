@@ -80,16 +80,11 @@ pytest tests/ --cov=claude_switch --cov-report=html
 
 HTML报告会生成在 `htmlcov/` 目录，用浏览器打开 `htmlcov/index.html` 查看详细报告。
 
-### 当前测试覆盖率
+### 当前测试状态
 
-- **总测试数量**：92个测试
-- **总体覆盖率**：83%
-- **模块覆盖率**：
-  - `__init__.py`: 100%
-  - `complete.py`: 100%
-  - `config.py`: 99%
-  - `commands.py`: 94%
-  - `main.py`: 0% (CLI入口，通过集成测试覆盖)
+- **总测试数量**：63个测试
+
+> 注：覆盖率数值需安装 `pytest-cov` 后通过 `pytest tests/ --cov=claude_switch --cov-report=term-missing` 生成。
 
 ## 测试内容
 
@@ -115,22 +110,22 @@ HTML报告会生成在 `htmlcov/` 目录，用浏览器打开 `htmlcov/index.htm
 - 损坏文件恢复
 - 示例配置生成
 
-### test_commands.py (35个测试)
+### test_commands.py (17个测试)
 
-测试所有CLI命令的业务逻辑：
+测试CLI命令的业务逻辑，包含4个测试类：
 
-- **配置管理命令**：add, list, remove, edit, show
-- **模型管理命令**：model-add, model-remove, model-list, model-set-default
-- **运行命令**：use_config (各种场景)
-- **查看命令**：default, current
+- `TestListConfigsImpl` (4)：list 配置列表功能，含 load_error 检查
+- `TestEditConfigImpl` (3)：edit 编辑配置功能（文件存在/不存在/编辑器缺失）
+- `TestUseConfigImpl` (8)：run 启动功能（默认配置、指定配置、config:model 格式、参数传递、异常场景）
+- `TestCurrentConfigImpl` (2)：current 当前环境变量查看
 
-### test_complete.py (18个测试)
+### test_complete.py (7个测试)
 
-测试自动补全功能：
+测试自动补全功能，包含1个测试类 `TestCompleteConfigModelNames`：
 
-- **配置名称补全**：前缀匹配、空输入、无匹配
-- **模型名称补全**：config:model格式、默认标记、描述显示
-- **完整补全**：多配置、多模型、边界情况
+- 空输入、配置前缀匹配、完整 config:model 前缀匹配
+- 默认标记显示、描述信息显示
+- 无匹配场景、空配置场景
 
 ## 编写新测试
 
@@ -219,28 +214,19 @@ pytest tests/ --durations=10
 
 ```
 ============================= test session starts ==============================
-platform darwin -- Python 3.12.10, pytest-9.0.2, pluggy-1.6.0
-rootdir: /Users/user/claude-code-switch
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/user/claude-config-switch
 configfile: pytest.ini
-plugins: mock-3.15.1, cov-7.0.0
-collecting ... collected 92 items
+plugins: cov-7.0.0
+collecting ... collected 63 items
 
-tests/test_config.py::TestModelConfig::test_model_config_creation PASSED  [  1%]
-tests/test_config.py::TestModelConfig::test_model_config_defaults PASSED  [  2%]
+tests/test_commands.py::TestListConfigsImpl::test_list_configs_empty PASSED [  1%]
+tests/test_commands.py::TestListConfigsImpl::test_list_configs_with_data PASSED [  3%]
 ...
+tests/test_config.py::TestConfigManager::test_create_example_config PASSED [ 98%]
+tests/test_config.py::TestConfigManager::test_save_and_load_with_models PASSED [100%]
 
-============================== 92 passed in 0.15s ==============================
-
-================================ tests coverage ================================
-Name                        Stmts   Miss  Cover   Missing
----------------------------------------------------------
-claude_switch/__init__.py       1      0   100%
-claude_switch/commands.py     190     11    94%
-claude_switch/complete.py      45      0   100%
-claude_switch/config.py       128      1    99%
-claude_switch/main.py          58     58     0%
----------------------------------------------------------
-TOTAL                         422     70    83%
+============================== 63 passed in 0.07s ==============================
 ```
 
 ## 常见问题

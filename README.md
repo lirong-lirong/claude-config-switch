@@ -62,14 +62,18 @@ source ~/.zshrc  # 或 source ~/.bashrc
 
 ## 使用方法
 
-**推荐使用 `claude-switch edit` 命令直接编辑配置文件**
+所有配置管理都通过 `edit` 命令直接编辑 JSON 配置文件完成。
 
 ```bash
-# 快速开始：编辑配置文件
+# 编辑配置文件（如果不存在会自动创建示例配置）
 claude-switch edit
-```
 
-如果配置文件不存在，会自动创建包含完整示例配置的文件，包含 deepseek 和 anthropic 两个配置示例，可以直接修改其中的 API 密钥等信息。
+# 列出所有配置及模型详情
+claude-switch list
+
+# 查看当前环境变量和默认配置
+claude-switch current
+```
 
 ### 使用配置启动Claude Code
 
@@ -83,11 +87,11 @@ claude-switch run deepseek
 # 使用指定配置和指定模型启动（支持自动补全）
 claude-switch run deepseek:reasoner
 
-# 使用指定配置和模型并传递参数给Claude Code
+# 传递参数给Claude Code
 claude-switch run deepseek:chat --args "--help"
 
-# 传递多个参数给Claude Code
-claude-switch run deepseek --args "--permission-mode plan  --debug"
+# 传递多个参数
+claude-switch run deepseek --args "--permission-mode plan --debug"
 
 echo "Hello" | claude-switch run deepseek --args "--print --debug"
 ```
@@ -98,107 +102,14 @@ echo "Hello" | claude-switch run deepseek --args "--print --debug"
 - **模型名称**: 使用 `配置名:模型名` 格式自动补全
 - **安装补全**: `claude-switch --install-completion`
 
-### 传递参数给 Claude Code
+### 命令一览
 
-使用 `--args` 选项可以将参数传递给 Claude Code：
-
-```bash
-# 查看 Claude Code 帮助
-claude-switch run deepseek --args "--help"
-
-# 启用调试模式
-claude-switch run deepseek --args "--debug"
-
-# 传递多个参数
-claude-switch run deepseek --args "--debug --verbose"
-
-# 使用特定模型
-claude-switch run deepseek --args "--model deepseek-chat"
-```
-
-### 添加配置
-
-```bash
-claude-switch add deepseek \
-  --api-key sk-xxx \
-  --base-url https://api.deepseek.com/anthropic \
-  --description "DeepSeek API"
-```
-
-### 为配置添加模型
-
-```bash
-# 添加Chat模型并设为默认
-claude-switch model-add deepseek chat \
-  --model-id deepseek-chat \
-  --description "DeepSeek Chat模型" \
-  --set-default
-
-# 添加Reasoner模型
-claude-switch model-add deepseek reasoner \
-  --model-id deepseek-reasoner \
-  --small-fast-model deepseek-chat \
-  --description "DeepSeek Reasoner模型"
-
-# 添加Coder模型
-claude-switch model-add deepseek coder \
-  --model-id deepseek-coder \
-  --description "DeepSeek Coder模型"
-```
-
-### 列出所有配置
-
-```bash
-claude-switch list
-```
-
-### 列出配置中的模型
-
-```bash
-claude-switch model-list deepseek
-```
-
-### 设置默认模型
-
-```bash
-# 使用配置:模型格式（支持自动补全）
-claude-switch model-set-default deepseek:reasoner
-```
-
-### 查看配置详情
-
-```bash
-claude-switch show deepseek
-```
-
-### 编辑配置
-
-```bash
-# 使用vim直接编辑配置文件（推荐）
-claude-switch edit
-
-# 如果配置文件不存在，会自动创建包含示例配置的文件
-# 包含deepseek和anthropic两个完整配置示例
-```
-
-### 删除配置
-
-```bash
-claude-switch remove deepseek
-```
-
-### 删除模型
-
-```bash
-# 使用配置:模型格式（支持自动补全）
-claude-switch model-remove deepseek:chat
-```
-
-### 查看当前环境变量
-
-```bash
-claude-switch current
-```
+| 命令 | 说明 |
+|------|------|
+| `list` / `ls` | 列出所有配置及其模型详情 |
+| `edit` | 使用 vim 编辑配置文件 |
+| `run [config[:model]]` | 使用指定配置启动 Claude Code |
+| `current` | 显示当前环境变量和默认配置 |
 
 ## 配置项说明
 
