@@ -1,6 +1,7 @@
 typer[all]
 rich
 python-dotenv
+pyyaml
 typing_extensions
 
 # Development and testing dependencies

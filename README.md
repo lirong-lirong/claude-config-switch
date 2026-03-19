@@ -152,67 +152,55 @@ echo "Hello" | claude-switch run deepseek --args "--print --debug"
 配置文件存储在：
 
 ```
-~/.config/claude-code-switch/config.json
+~/.config/claude-code-switch/config.yaml
 ```
 
 ## 示例配置
 
-```json
-{
-  "default_config": "deepseek",
-  "configs": {
-    "deepseek": {
-      "name": "deepseek",
-      "api_key": "sk-xxx",
-      "base_url": "https://api.deepseek.com/anthropic",
-      "timeout_ms": 600000,
-      "disable_nonessential_traffic": true,
-      "description": "DeepSeek API",
-      "models": {
-        "chat": {
-          "name": "chat",
-          "model": "deepseek-chat",
-          "small_fast_model": "",
-          "description": "DeepSeek Chat模型"
-        },
-        "reasoner": {
-          "name": "reasoner",
-          "model": "deepseek-reasoner",
-          "small_fast_model": "deepseek-chat",
-          "description": "DeepSeek Reasoner模型"
-        },
-        "coder": {
-          "name": "coder",
-          "model": "deepseek-coder",
-          "small_fast_model": "",
-          "description": "DeepSeek Coder模型"
-        }
-      },
-      "default_model": "reasoner"
-    },
-    "anthropic": {
-      "name": "anthropic",
-      "api_key": "sk-ant-xxx",
-      "base_url": "https://api.anthropic.com",
-      "timeout_ms": 600000,
-      "disable_nonessential_traffic": true,
-      "description": "Anthropic官方API",
-      "models": {
-        "sonnet": {
-          "name": "sonnet",
-          "model": "claude-3-5-sonnet-20241022",
-          "small_fast_model": "claude-3-haiku-20240307",
-          "description": "Claude 3.5 Sonnet"
-        },
-        "opus": {
-          "name": "opus",
-          "model": "claude-3-opus-20240229",
-          "small_fast_model": "claude-3-haiku-20240307",
-          "description": "Claude 3 Opus"
-        }
-      },
-      "default_model": "sonnet"
-    }
-  }
-}
+```yaml
+default_config: deepseek
+configs:
+  deepseek:
+    name: deepseek
+    api_key: sk-xxx
+    base_url: https://api.deepseek.com/anthropic
+    timeout_ms: 600000
+    disable_nonessential_traffic: true
+    description: DeepSeek API
+    models:
+      chat:
+        name: chat
+        model: deepseek-chat
+        small_fast_model: ''
+        description: DeepSeek Chat模型
+      reasoner:
+        name: reasoner
+        model: deepseek-reasoner
+        small_fast_model: deepseek-chat
+        description: DeepSeek Reasoner模型
+      coder:
+        name: coder
+        model: deepseek-coder
+        small_fast_model: ''
+        description: DeepSeek Coder模型
+    default_model: reasoner
+  anthropic:
+    name: anthropic
+    api_key: sk-ant-xxx
+    base_url: https://api.anthropic.com
+    timeout_ms: 600000
+    disable_nonessential_traffic: true
+    description: Anthropic官方API
+    models:
+      sonnet:
+        name: sonnet
+        model: claude-3-5-sonnet-20241022
+        small_fast_model: claude-3-haiku-20240307
+        description: Claude 3.5 Sonnet
+      opus:
+        name: opus
+        model: claude-3-opus-20240229
+        small_fast_model: claude-3-haiku-20240307
+        description: Claude 3 Opus
+    default_model: sonnet
 ```

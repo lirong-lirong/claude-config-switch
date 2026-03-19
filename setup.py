@@ -18,6 +18,7 @@ setup(
         "typer[all]",
         "rich",
         "python-dotenv",
+        "pyyaml",
     ],
     extras_require={
         "test": [

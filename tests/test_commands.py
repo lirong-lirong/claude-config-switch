@@ -67,12 +67,12 @@ class TestEditConfigImpl:
     @patch('claude_switch.commands.print')
     def test_edit_config_file_exists(self, mock_print, mock_manager, mock_exists, mock_subprocess):
         """Test editing existing config file."""
-        mock_manager.get_config_file_path.return_value = "/path/to/config.json"
+        mock_manager.get_config_file_path.return_value = "/path/to/config.yaml"
         mock_exists.return_value = True
 
         edit_config_impl()
 
-        mock_subprocess.assert_called_once_with(["vim", "/path/to/config.json"])
+        mock_subprocess.assert_called_once_with(["vim", "/path/to/config.yaml"])
 
     @patch('claude_switch.commands.subprocess.run')
     @patch('claude_switch.commands.os.path.exists')
@@ -83,14 +83,14 @@ class TestEditConfigImpl:
     def test_edit_config_file_not_exists(self, mock_print, mock_manager, mock_dirname,
                                           mock_makedirs, mock_exists, mock_subprocess):
         """Test editing when config file doesn't exist."""
-        mock_manager.get_config_file_path.return_value = "/path/to/config.json"
+        mock_manager.get_config_file_path.return_value = "/path/to/config.yaml"
         mock_exists.return_value = False
         mock_dirname.return_value = "/path/to"
 
         edit_config_impl()
 
         mock_manager.create_example_config.assert_called_once()
-        mock_subprocess.assert_called_once_with(["vim", "/path/to/config.json"])
+        mock_subprocess.assert_called_once_with(["vim", "/path/to/config.yaml"])
 
     @patch('claude_switch.commands.subprocess.run')
     @patch('claude_switch.commands.os.path.exists')
@@ -98,7 +98,7 @@ class TestEditConfigImpl:
     @patch('claude_switch.commands.print')
     def test_edit_config_vim_not_found(self, mock_print, mock_manager, mock_exists, mock_subprocess):
         """Test editing when vim is not found."""
-        mock_manager.get_config_file_path.return_value = "/path/to/config.json"
+        mock_manager.get_config_file_path.return_value = "/path/to/config.yaml"
         mock_exists.return_value = True
         mock_subprocess.side_effect = FileNotFoundError()
 

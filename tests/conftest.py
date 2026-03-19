@@ -17,7 +17,7 @@ def temp_config_dir() -> Generator[Path, None, None]:
 @pytest.fixture
 def temp_config_file(temp_config_dir: Path) -> Path:
     """Create a temporary config file path."""
-    return temp_config_dir / "config.json"
+    return temp_config_dir / "config.yaml"
 
 
 @pytest.fixture

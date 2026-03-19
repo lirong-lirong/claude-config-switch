@@ -1,5 +1,5 @@
 """Tests for config.py module."""
-import json
+import yaml
 import pytest
 from pathlib import Path
 from claude_switch.config import ModelConfig, ClaudeConfig, ConfigManager
@@ -214,7 +214,7 @@ class TestConfigManager:
         """Test ConfigManager initialization creates directory."""
         manager = ConfigManager(str(temp_config_dir))
         assert manager.config_dir.exists()
-        assert manager.config_file == temp_config_dir / "config.json"
+        assert manager.config_file == temp_config_dir / "config.yaml"
 
     def test_add_config_success(self, temp_config_dir, sample_claude_config):
         """Test adding a config successfully."""
@@ -336,7 +336,7 @@ class TestConfigManager:
         """Test getting config file path."""
         manager = ConfigManager(str(temp_config_dir))
         path = manager.get_config_file_path()
-        assert path == str(temp_config_dir / "config.json")
+        assert path == str(temp_config_dir / "config.yaml")
 
     def test_persistence(self, temp_config_dir, sample_claude_config):
         """Test that configs persist across manager instances."""
@@ -352,8 +352,8 @@ class TestConfigManager:
 
     def test_load_corrupted_config(self, temp_config_dir):
         """Test loading a corrupted config file initializes empty."""
-        config_file = temp_config_dir / "config.json"
-        config_file.write_text("invalid json {{{", encoding='utf-8')
+        config_file = temp_config_dir / "config.yaml"
+        config_file.write_text("invalid: yaml: [[[", encoding='utf-8')
 
         manager = ConfigManager(str(temp_config_dir))
         assert len(manager.list_configs()) == 0
@@ -368,7 +368,7 @@ class TestConfigManager:
 
         # Verify example config content
         with open(manager.config_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+            data = yaml.safe_load(f)
 
         assert "configs" in data
         assert "default_config" in data

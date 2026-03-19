@@ -1,7 +1,7 @@
 """
 Claude Code配置管理模块
 """
-import json
+import yaml
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict, field
@@ -88,7 +88,7 @@ class ConfigManager:
         else:
             self.config_dir = Path.home() / ".config" / "claude-code-switch"
 
-        self.config_file = self.config_dir / "config.json"
+        self.config_file = self.config_dir / "config.yaml"
         self.config_dir.mkdir(parents=True, exist_ok=True)
 
         self._configs: Dict[str, ClaudeConfig] = {}
@@ -101,7 +101,7 @@ class ConfigManager:
         if self.config_file.exists():
             try:
                 with open(self.config_file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
+                    data = yaml.safe_load(f) or {}
 
                     # 提取默认配置
                     self._default_config = data.get('default_config', '')
@@ -119,7 +119,7 @@ class ConfigManager:
                             config.add_model(model_config)
 
                         self._configs[name] = config
-            except (json.JSONDecodeError, KeyError, TypeError) as e:
+            except (yaml.YAMLError, KeyError, TypeError) as e:
                 # 如果配置文件损坏，重新初始化
                 self._load_error = str(e)
                 self._configs = {}
@@ -132,7 +132,7 @@ class ConfigManager:
             'default_config': self._default_config
         }
         with open(self.config_file, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
     def add_config(self, config: ClaudeConfig) -> bool:
         """添加配置"""
@@ -260,8 +260,7 @@ class ConfigManager:
             }
         }
 
-        import json
         with open(self.config_file, 'w', encoding='utf-8') as f:
-            json.dump(example_config, f, indent=2, ensure_ascii=False)
+            yaml.dump(example_config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
             
 config_manager = ConfigManager()
