@@ -22,7 +22,9 @@ fi
 
 # 获取Python用户bin目录
 PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-USER_BIN_DIR="$HOME/Library/Python/$PYTHON_VERSION/bin"
+USER_BASE_DIR=$(python3 -m site --user-base)
+USER_BIN_DIR="$USER_BASE_DIR/bin"
+# USER_BIN_DIR="$HOME/Library/Python/$PYTHON_VERSION/bin"
 
 # 安装包
 pip3 install -e .

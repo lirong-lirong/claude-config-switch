@@ -1,3 +1,4 @@
 .claude
 *.egg-info
 CLAUDE.md
+__pycache__/
