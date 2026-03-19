@@ -1,6 +1,7 @@
 typer[all]
 rich
 python-dotenv
+typing_extensions
 
 # Development and testing dependencies
 pytest>=7.0.0
