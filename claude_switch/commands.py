@@ -23,13 +23,13 @@ def list_configs_impl() -> None:
         print("[yellow]暂无配置，请使用 'ccs edit' 编辑配置文件[/yellow]")
         return
 
-    for config in configs:
+    for config_name, config in configs.items():
         # 配置基本信息
-        table = Table(title=f"配置: {config.name}")
+        table = Table(title=f"配置: {config_name}")
         table.add_column("项目", style="cyan")
         table.add_column("值", style="white")
 
-        table.add_row("名称", config.name)
+        table.add_row("名称", config_name)
         table.add_row("API URL", config.base_url)
         table.add_row("默认模型", config.default_model if config.default_model else "[dim]未设置[/dim]")
         table.add_row("超时时间", f"{config.timeout_ms}ms")
@@ -50,7 +50,7 @@ def list_configs_impl() -> None:
                 is_default = "[green]✓[/green]" if model_name == config.default_model else ""
                 model_table.add_row(
                     f"{model_name} {is_default}",
-                    model_config.model,
+                    model_config.model_id,
                     model_config.small_fast_model if model_config.small_fast_model else "[dim]未设置[/dim]",
                     model_config.description or ""
                 )
@@ -65,7 +65,7 @@ def list_configs_impl() -> None:
     summary.add_column("配置", style="cyan")
     summary.add_column("模型列表", style="white")
 
-    for config in configs:
+    for config_name, config in configs.items():
         if config.models:
             parts = []
             for mname in config.models:
@@ -76,7 +76,7 @@ def list_configs_impl() -> None:
             model_str = ", ".join(parts)
         else:
             model_str = "[dim]暂无模型[/dim]"
-        summary.add_row(config.name, model_str)
+        summary.add_row(config_name, model_str)
 
     print(summary)
 
@@ -112,7 +112,7 @@ def use_config_impl(
         if not default_config:
             print(f"[red]✗[/red] 未设置默认配置，请使用 'ccs run <配置名称>' 或先在配置文件中设置 default_config")
             return
-        config_name = default_config.name
+        config_name = config_manager.get_default_config_name()
         config = default_config
     else:
         if ":" in config_model:
@@ -185,8 +185,8 @@ def current_config_impl() -> None:
 
     print(table)
 
-    default_config = config_manager.get_default_config()
-    if default_config:
-        print(f"\n[green]✓[/green] 默认配置: '{default_config.name}'")
+    default_config_name = config_manager.get_default_config_name()
+    if default_config_name:
+        print(f"\n[green]✓[/green] 默认配置: '{default_config_name}'")
     else:
         print(f"\n[yellow]![/yellow] 未设置默认配置")

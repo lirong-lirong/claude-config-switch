@@ -8,12 +8,12 @@ def complete_config_model_names(incomplete: str):
     configs = config_manager.list_configs()
 
     all_models = []
-    for config in configs:
+    for config_name, config in configs.items():
         if config.models:
             for model_name, model_config in config.models.items():
-                unique_name = f"{config.name}:{model_name}"
+                unique_name = f"{config_name}:{model_name}"
                 is_default = " (默认)" if model_name == config.default_model else ""
-                help_text = f"{model_config.model}{is_default}"
+                help_text = f"{model_config.model_id}{is_default}"
                 if model_config.description:
                     help_text = f"{help_text} - {model_config.description}"
                 all_models.append((unique_name, help_text))

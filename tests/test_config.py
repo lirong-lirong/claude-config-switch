@@ -11,19 +11,17 @@ class TestModelConfig:
     def test_model_config_creation(self):
         """Test creating a ModelConfig instance."""
         model = ModelConfig(
-            name="test-model",
-            model="test-model-id",
+            model_id="test-model-id",
             small_fast_model="test-small-model",
             description="Test description"
         )
-        assert model.name == "test-model"
-        assert model.model == "test-model-id"
+        assert model.model_id == "test-model-id"
         assert model.small_fast_model == "test-small-model"
         assert model.description == "Test description"
 
     def test_model_config_defaults(self):
         """Test ModelConfig with default values."""
-        model = ModelConfig(name="test", model="test-id")
+        model = ModelConfig(model_id="test-id")
         assert model.small_fast_model == ""
         assert model.description == ""
 
@@ -34,16 +32,14 @@ class TestClaudeConfig:
     def test_claude_config_creation(self, sample_model_config):
         """Test creating a ClaudeConfig instance."""
         config = ClaudeConfig(
-            name="test-config",
             api_key="sk-test-123",
             base_url="https://api.test.com",
             timeout_ms=600000,
             disable_nonessential_traffic=True,
-            description="Test config",
-            models={"test-model": sample_model_config},
-            default_model="test-model"
+            description="Test config"
         )
-        assert config.name == "test-config"
+        config.add_model("test-model", sample_model_config)
+        config.default_model = "test-model"
         assert config.api_key == "sk-test-123"
         assert config.base_url == "https://api.test.com"
         assert config.timeout_ms == 600000
@@ -55,7 +51,6 @@ class TestClaudeConfig:
     def test_claude_config_defaults(self):
         """Test ClaudeConfig with default values."""
         config = ClaudeConfig(
-            name="test",
             api_key="sk-test",
             base_url="https://test.com"
         )
@@ -68,19 +63,18 @@ class TestClaudeConfig:
     def test_post_init_sets_default_model(self, sample_model_config):
         """Test __post_init__ automatically sets default model."""
         config = ClaudeConfig(
-            name="test",
             api_key="sk-test",
-            base_url="https://test.com",
-            models={"model1": sample_model_config}
+            base_url="https://test.com"
         )
+        config.add_model("model1", sample_model_config)
         assert config.default_model == "model1"
 
     def test_add_model_success(self):
         """Test adding a model successfully."""
-        config = ClaudeConfig(name="test", api_key="sk-test", base_url="https://test.com")
-        model = ModelConfig(name="new-model", model="new-model-id")
+        config = ClaudeConfig(api_key="sk-test", base_url="https://test.com")
+        model = ModelConfig(model_id="new-model-id")
 
-        result = config.add_model(model)
+        result = config.add_model("new-model", model)
         assert result is True
         assert "new-model" in config.models
         assert config.default_model == "new-model"
@@ -88,25 +82,24 @@ class TestClaudeConfig:
     def test_add_model_duplicate(self, sample_model_config):
         """Test adding a duplicate model fails."""
         config = ClaudeConfig(
-            name="test",
             api_key="sk-test",
-            base_url="https://test.com",
-            models={"test-model": sample_model_config}
+            base_url="https://test.com"
         )
+        config.add_model("test-model", sample_model_config)
 
-        result = config.add_model(sample_model_config)
+        result = config.add_model("test-model", sample_model_config)
         assert result is False
 
     def test_remove_model_success(self, sample_model_config):
         """Test removing a model successfully."""
-        model2 = ModelConfig(name="model2", model="model2-id")
+        model2 = ModelConfig(model_id="model2-id")
         config = ClaudeConfig(
-            name="test",
             api_key="sk-test",
             base_url="https://test.com",
-            models={"model1": sample_model_config, "model2": model2},
             default_model="model1"
         )
+        config.add_model("model1", sample_model_config)
+        config.add_model("model2", model2)
 
         result = config.remove_model("model1")
         assert result is True
@@ -121,12 +114,10 @@ class TestClaudeConfig:
     def test_remove_last_model(self, sample_model_config):
         """Test removing the last model clears default."""
         config = ClaudeConfig(
-            name="test",
             api_key="sk-test",
-            base_url="https://test.com",
-            models={"model1": sample_model_config},
-            default_model="model1"
+            base_url="https://test.com"
         )
+        config.add_model("model1", sample_model_config)
 
         result = config.remove_model("model1")
         assert result is True
@@ -137,7 +128,7 @@ class TestClaudeConfig:
         """Test getting an existing model."""
         model = sample_claude_config.get_model("test-model")
         assert model is not None
-        assert model.name == "test-model"
+        assert model.model_id == "test-model-id"
 
     def test_get_model_not_exists(self, sample_claude_config):
         """Test getting a nonexistent model."""
@@ -179,29 +170,25 @@ class TestClaudeConfig:
 
     def test_to_env_vars_small_fast_model_fallback(self):
         """Test small_fast_model falls back to main model if empty."""
-        model = ModelConfig(name="model", model="main-model", small_fast_model="")
+        model = ModelConfig(model_id="main-model", small_fast_model="")
         config = ClaudeConfig(
-            name="test",
             api_key="sk-test",
-            base_url="https://test.com",
-            models={"model": model},
-            default_model="model"
+            base_url="https://test.com"
         )
+        config.add_model("model", model)
 
         env_vars = config.to_env_vars()
         assert env_vars["ANTHROPIC_SMALL_FAST_MODEL"] == "main-model"
 
     def test_to_env_vars_disable_traffic_false(self):
         """Test environment variable when disable_nonessential_traffic is False."""
-        model = ModelConfig(name="model", model="main-model")
+        model = ModelConfig(model_id="main-model")
         config = ClaudeConfig(
-            name="test",
             api_key="sk-test",
             base_url="https://test.com",
-            disable_nonessential_traffic=False,
-            models={"model": model},
-            default_model="model"
+            disable_nonessential_traffic=False
         )
+        config.add_model("model", model)
 
         env_vars = config.to_env_vars()
         assert env_vars["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] == "0"
@@ -219,7 +206,7 @@ class TestConfigManager:
     def test_add_config_success(self, temp_config_dir, sample_claude_config):
         """Test adding a config successfully."""
         manager = ConfigManager(str(temp_config_dir))
-        result = manager.add_config(sample_claude_config)
+        result = manager.add_config("test-config", sample_claude_config)
 
         assert result is True
         assert manager.config_exists("test-config")
@@ -227,18 +214,18 @@ class TestConfigManager:
     def test_add_config_duplicate(self, temp_config_dir, sample_claude_config):
         """Test adding a duplicate config fails."""
         manager = ConfigManager(str(temp_config_dir))
-        manager.add_config(sample_claude_config)
+        manager.add_config("test-config", sample_claude_config)
 
-        result = manager.add_config(sample_claude_config)
+        result = manager.add_config("test-config", sample_claude_config)
         assert result is False
 
     def test_update_config_success(self, temp_config_dir, sample_claude_config):
         """Test updating an existing config."""
         manager = ConfigManager(str(temp_config_dir))
-        manager.add_config(sample_claude_config)
+        manager.add_config("test-config", sample_claude_config)
 
         sample_claude_config.description = "Updated description"
-        result = manager.update_config(sample_claude_config)
+        result = manager.update_config("test-config", sample_claude_config)
 
         assert result is True
         updated = manager.get_config("test-config")
@@ -247,13 +234,13 @@ class TestConfigManager:
     def test_update_config_nonexistent(self, temp_config_dir, sample_claude_config):
         """Test updating a nonexistent config fails."""
         manager = ConfigManager(str(temp_config_dir))
-        result = manager.update_config(sample_claude_config)
+        result = manager.update_config("test-config", sample_claude_config)
         assert result is False
 
     def test_remove_config_success(self, temp_config_dir, sample_claude_config):
         """Test removing a config successfully."""
         manager = ConfigManager(str(temp_config_dir))
-        manager.add_config(sample_claude_config)
+        manager.add_config("test-config", sample_claude_config)
 
         result = manager.remove_config("test-config")
         assert result is True
@@ -268,11 +255,10 @@ class TestConfigManager:
     def test_get_config_exists(self, temp_config_dir, sample_claude_config):
         """Test getting an existing config."""
         manager = ConfigManager(str(temp_config_dir))
-        manager.add_config(sample_claude_config)
+        manager.add_config("test-config", sample_claude_config)
 
         config = manager.get_config("test-config")
         assert config is not None
-        assert config.name == "test-config"
 
     def test_get_config_not_exists(self, temp_config_dir):
         """Test getting a nonexistent config."""
@@ -283,20 +269,20 @@ class TestConfigManager:
     def test_list_configs(self, temp_config_dir, sample_claude_config):
         """Test listing all configs."""
         manager = ConfigManager(str(temp_config_dir))
-        manager.add_config(sample_claude_config)
+        manager.add_config("test-config", sample_claude_config)
 
-        config2 = ClaudeConfig(name="config2", api_key="sk-test2", base_url="https://test2.com")
-        manager.add_config(config2)
+        config2 = ClaudeConfig(api_key="sk-test2", base_url="https://test2.com")
+        manager.add_config("config2", config2)
 
         configs = manager.list_configs()
         assert len(configs) == 2
-        assert any(c.name == "test-config" for c in configs)
-        assert any(c.name == "config2" for c in configs)
+        assert "test-config" in configs
+        assert "config2" in configs
 
     def test_config_exists(self, temp_config_dir, sample_claude_config):
         """Test checking if config exists."""
         manager = ConfigManager(str(temp_config_dir))
-        manager.add_config(sample_claude_config)
+        manager.add_config("test-config", sample_claude_config)
 
         assert manager.config_exists("test-config") is True
         assert manager.config_exists("nonexistent") is False
@@ -304,7 +290,7 @@ class TestConfigManager:
     def test_set_default_config_success(self, temp_config_dir, sample_claude_config):
         """Test setting default config successfully."""
         manager = ConfigManager(str(temp_config_dir))
-        manager.add_config(sample_claude_config)
+        manager.add_config("test-config", sample_claude_config)
 
         result = manager.set_default_config("test-config")
         assert result is True
@@ -319,12 +305,12 @@ class TestConfigManager:
     def test_get_default_config(self, temp_config_dir, sample_claude_config):
         """Test getting default config."""
         manager = ConfigManager(str(temp_config_dir))
-        manager.add_config(sample_claude_config)
+        manager.add_config("test-config", sample_claude_config)
         manager.set_default_config("test-config")
 
         default = manager.get_default_config()
         assert default is not None
-        assert default.name == "test-config"
+        assert manager.get_default_config_name() == "test-config"
 
     def test_get_default_config_none(self, temp_config_dir):
         """Test getting default config when none is set."""
@@ -341,13 +327,12 @@ class TestConfigManager:
     def test_persistence(self, temp_config_dir, sample_claude_config):
         """Test that configs persist across manager instances."""
         manager1 = ConfigManager(str(temp_config_dir))
-        manager1.add_config(sample_claude_config)
+        manager1.add_config("test-config", sample_claude_config)
         manager1.set_default_config("test-config")
 
         manager2 = ConfigManager(str(temp_config_dir))
         config = manager2.get_config("test-config")
         assert config is not None
-        assert config.name == "test-config"
         assert manager2.get_default_config_name() == "test-config"
 
     def test_load_corrupted_config(self, temp_config_dir):
@@ -380,19 +365,18 @@ class TestConfigManager:
         manager = ConfigManager(str(temp_config_dir))
 
         config = ClaudeConfig(
-            name="multi-model",
             api_key="sk-test",
             base_url="https://test.com"
         )
 
-        model1 = ModelConfig(name="model1", model="model1-id")
-        model2 = ModelConfig(name="model2", model="model2-id", small_fast_model="model1-id")
+        model1 = ModelConfig(model_id="model1-id")
+        model2 = ModelConfig(model_id="model2-id", small_fast_model="model1-id")
 
-        config.add_model(model1)
-        config.add_model(model2)
+        config.add_model("model1", model1)
+        config.add_model("model2", model2)
         config.set_default_model("model2")
 
-        manager.add_config(config)
+        manager.add_config("multi-model", config)
 
         # Load in new manager instance
         manager2 = ConfigManager(str(temp_config_dir))

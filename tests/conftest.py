@@ -25,8 +25,7 @@ def sample_model_config():
     """Provide a sample ModelConfig for testing."""
     from claude_switch.config import ModelConfig
     return ModelConfig(
-        name="test-model",
-        model="test-model-id",
+        model_id="test-model-id",
         small_fast_model="test-small-model-id",
         description="Test model description"
     )
@@ -36,13 +35,12 @@ def sample_model_config():
 def sample_claude_config(sample_model_config):
     """Provide a sample ClaudeConfig for testing."""
     from claude_switch.config import ClaudeConfig
-    return ClaudeConfig(
-        name="test-config",
+    config = ClaudeConfig(
         api_key="sk-test-key-123",
         base_url="https://api.test.com",
         timeout_ms=600000,
         disable_nonessential_traffic=True,
-        description="Test configuration",
-        models={"test-model": sample_model_config},
-        default_model="test-model"
+        description="Test configuration"
     )
+    config.add_model("test-model", sample_model_config)
+    return config

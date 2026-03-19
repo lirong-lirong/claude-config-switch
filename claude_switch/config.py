@@ -6,11 +6,11 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict, field
 
+
 @dataclass
 class ModelConfig:
     """模型配置类"""
-    name: str
-    model: str
+    model_id: str
     small_fast_model: str = ""
     description: str = ""
 
@@ -18,7 +18,6 @@ class ModelConfig:
 @dataclass
 class ClaudeConfig:
     """Claude Code配置类"""
-    name: str
     api_key: str
     base_url: str
     timeout_ms: int = 600000
@@ -31,13 +30,13 @@ class ClaudeConfig:
         if not self.default_model and self.models:
             self.default_model = next(iter(self.models.keys()))
 
-    def add_model(self, model_config: ModelConfig) -> bool:
+    def add_model(self, model_name: str, model_config: ModelConfig) -> bool:
         """添加模型配置"""
-        if model_config.name in self.models:
+        if model_name in self.models:
             return False
-        self.models[model_config.name] = model_config
+        self.models[model_name] = model_config
         if not self.default_model:
-            self.default_model = model_config.name
+            self.default_model = model_name
         return True
 
     def remove_model(self, model_name: str) -> bool:
@@ -72,8 +71,8 @@ class ClaudeConfig:
         return {
             "ANTHROPIC_API_KEY": self.api_key,
             "ANTHROPIC_BASE_URL": self.base_url,
-            "ANTHROPIC_MODEL": model_config.model,
-            "ANTHROPIC_SMALL_FAST_MODEL": model_config.small_fast_model or model_config.model,
+            "ANTHROPIC_MODEL": model_config.model_id,
+            "ANTHROPIC_SMALL_FAST_MODEL": model_config.small_fast_model or model_config.model_id,
             "API_TIMEOUT_MS": str(self.timeout_ms),
             "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1" if self.disable_nonessential_traffic else "0"
         }
@@ -116,7 +115,7 @@ class ConfigManager:
                         # 添加模型配置
                         for model_name, model_data in models_data.items():
                             model_config = ModelConfig(**model_data)
-                            config.add_model(model_config)
+                            config.add_model(model_name, model_config)
 
                         self._configs[name] = config
             except (yaml.YAMLError, KeyError, TypeError) as e:
@@ -134,19 +133,19 @@ class ConfigManager:
         with open(self.config_file, 'w', encoding='utf-8') as f:
             yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
-    def add_config(self, config: ClaudeConfig) -> bool:
+    def add_config(self, name: str, config: ClaudeConfig) -> bool:
         """添加配置"""
-        if config.name in self._configs:
+        if name in self._configs:
             return False
-        self._configs[config.name] = config
+        self._configs[name] = config
         self._save_configs()
         return True
 
-    def update_config(self, config: ClaudeConfig) -> bool:
+    def update_config(self, name: str, config: ClaudeConfig) -> bool:
         """更新配置"""
-        if config.name not in self._configs:
+        if name not in self._configs:
             return False
-        self._configs[config.name] = config
+        self._configs[name] = config
         self._save_configs()
         return True
 
@@ -162,9 +161,9 @@ class ConfigManager:
         """获取配置"""
         return self._configs.get(name)
 
-    def list_configs(self) -> List[ClaudeConfig]:
+    def list_configs(self) -> Dict[str, ClaudeConfig]:
         """列出所有配置"""
-        return list(self._configs.values())
+        return dict(self._configs)
 
     def config_exists(self, name: str) -> bool:
         """检查配置是否存在"""
@@ -199,14 +198,13 @@ class ConfigManager:
     def save_configs(self):
         """保存配置到文件（公开方法）"""
         self._save_configs()
-        
+
     def create_example_config(self) -> None:
         """创建包含示例配置的文件"""
         example_config = {
             "default_config": "deepseek",
             "configs": {
                 "deepseek": {
-                    "name": "deepseek",
                     "api_key": "sk-xxx",
                     "base_url": "https://api.deepseek.com/anthropic",
                     "timeout_ms": 600000,
@@ -214,20 +212,17 @@ class ConfigManager:
                     "description": "DeepSeek API",
                     "models": {
                         "chat": {
-                            "name": "chat",
-                            "model": "deepseek-chat",
+                            "model_id": "deepseek-chat",
                             "small_fast_model": "",
                             "description": "DeepSeek Chat模型"
                         },
                         "reasoner": {
-                            "name": "reasoner",
-                            "model": "deepseek-reasoner",
+                            "model_id": "deepseek-reasoner",
                             "small_fast_model": "deepseek-chat",
                             "description": "DeepSeek Reasoner模型"
                         },
                         "coder": {
-                            "name": "coder",
-                            "model": "deepseek-coder",
+                            "model_id": "deepseek-coder",
                             "small_fast_model": "",
                             "description": "DeepSeek Coder模型"
                         }
@@ -235,7 +230,6 @@ class ConfigManager:
                     "default_model": "reasoner"
                 },
                 "anthropic": {
-                    "name": "anthropic",
                     "api_key": "sk-ant-xxx",
                     "base_url": "https://api.anthropic.com",
                     "timeout_ms": 600000,
@@ -243,14 +237,12 @@ class ConfigManager:
                     "description": "Anthropic官方API",
                     "models": {
                         "sonnet": {
-                            "name": "sonnet",
-                            "model": "claude-3-5-sonnet-20241022",
+                            "model_id": "claude-3-5-sonnet-20241022",
                             "small_fast_model": "claude-3-haiku-20240307",
                             "description": "Claude 3.5 Sonnet"
                         },
                         "opus": {
-                            "name": "opus",
-                            "model": "claude-3-opus-20240229",
+                            "model_id": "claude-3-opus-20240229",
                             "small_fast_model": "claude-3-haiku-20240307",
                             "description": "Claude 3 Opus"
                         }
@@ -262,5 +254,6 @@ class ConfigManager:
 
         with open(self.config_file, 'w', encoding='utf-8') as f:
             yaml.dump(example_config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
-            
+
+
 config_manager = ConfigManager()

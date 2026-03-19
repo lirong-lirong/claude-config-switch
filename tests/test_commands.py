@@ -18,7 +18,7 @@ class TestListConfigsImpl:
     def test_list_configs_empty(self, mock_print, mock_manager):
         """Test listing configs when none exist."""
         mock_manager.get_load_error.return_value = None
-        mock_manager.list_configs.return_value = []
+        mock_manager.list_configs.return_value = {}
 
         list_configs_impl()
 
@@ -29,7 +29,7 @@ class TestListConfigsImpl:
     def test_list_configs_with_data(self, mock_print, mock_manager, sample_claude_config):
         """Test listing configs with data shows details and models."""
         mock_manager.get_load_error.return_value = None
-        mock_manager.list_configs.return_value = [sample_claude_config]
+        mock_manager.list_configs.return_value = {"test-config": sample_claude_config}
 
         list_configs_impl()
 
@@ -40,8 +40,8 @@ class TestListConfigsImpl:
     def test_list_configs_no_models(self, mock_print, mock_manager):
         """Test listing configs when config has no models."""
         mock_manager.get_load_error.return_value = None
-        config = ClaudeConfig(name="test", api_key="sk-test", base_url="https://test.com")
-        mock_manager.list_configs.return_value = [config]
+        config = ClaudeConfig(api_key="sk-test", base_url="https://test.com")
+        mock_manager.list_configs.return_value = {"test": config}
 
         list_configs_impl()
 
@@ -116,6 +116,7 @@ class TestUseConfigImpl:
     def test_use_config_with_default(self, mock_print, mock_manager, mock_subprocess, sample_claude_config):
         """Test using default config."""
         mock_manager.get_default_config.return_value = sample_claude_config
+        mock_manager.get_default_config_name.return_value = "test-config"
 
         use_config_impl()
 
@@ -189,7 +190,7 @@ class TestUseConfigImpl:
     @patch('claude_switch.commands.print')
     def test_use_config_no_models(self, mock_print, mock_manager, mock_subprocess):
         """Test using config with no models."""
-        config = ClaudeConfig(name="test", api_key="sk-test", base_url="https://test.com")
+        config = ClaudeConfig(api_key="sk-test", base_url="https://test.com")
         mock_manager.get_config.return_value = config
 
         use_config_impl("test")
@@ -221,11 +222,11 @@ class TestCurrentConfigImpl:
             "ANTHROPIC_BASE_URL": "https://test.com",
             "ANTHROPIC_MODEL": "test-model",
         }.get(key)
-        mock_manager.get_default_config.return_value = sample_claude_config
+        mock_manager.get_default_config_name.return_value = "test-config"
 
         current_config_impl()
 
-        mock_manager.get_default_config.assert_called_once()
+        mock_manager.get_default_config_name.assert_called_once()
 
     @patch('claude_switch.commands.os.environ.get')
     @patch('claude_switch.commands.config_manager')
@@ -233,8 +234,8 @@ class TestCurrentConfigImpl:
     def test_current_config_no_default(self, mock_print, mock_manager, mock_env_get):
         """Test showing current config when no default is set."""
         mock_env_get.return_value = None
-        mock_manager.get_default_config.return_value = None
+        mock_manager.get_default_config_name.return_value = ""
 
         current_config_impl()
 
-        mock_manager.get_default_config.assert_called_once()
+        mock_manager.get_default_config_name.assert_called_once()
