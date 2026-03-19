@@ -17,6 +17,7 @@ class TestListConfigsImpl:
     @patch('claude_switch.commands.print')
     def test_list_configs_empty(self, mock_print, mock_manager):
         """Test listing configs when none exist."""
+        mock_manager.get_load_error.return_value = None
         mock_manager.list_configs.return_value = []
 
         list_configs_impl()
@@ -27,6 +28,7 @@ class TestListConfigsImpl:
     @patch('claude_switch.commands.print')
     def test_list_configs_with_data(self, mock_print, mock_manager, sample_claude_config):
         """Test listing configs with data shows details and models."""
+        mock_manager.get_load_error.return_value = None
         mock_manager.list_configs.return_value = [sample_claude_config]
 
         list_configs_impl()
@@ -37,12 +39,23 @@ class TestListConfigsImpl:
     @patch('claude_switch.commands.print')
     def test_list_configs_no_models(self, mock_print, mock_manager):
         """Test listing configs when config has no models."""
+        mock_manager.get_load_error.return_value = None
         config = ClaudeConfig(name="test", api_key="sk-test", base_url="https://test.com")
         mock_manager.list_configs.return_value = [config]
 
         list_configs_impl()
 
         mock_manager.list_configs.assert_called_once()
+
+    @patch('claude_switch.commands.config_manager')
+    @patch('claude_switch.commands.print')
+    def test_list_configs_with_load_error(self, mock_print, mock_manager):
+        """Test listing configs when config file has a load error."""
+        mock_manager.get_load_error.return_value = "Expecting value: line 1 column 1 (char 0)"
+
+        list_configs_impl()
+
+        mock_manager.list_configs.assert_not_called()
 
 
 class TestEditConfigImpl:

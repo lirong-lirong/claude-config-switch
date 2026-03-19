@@ -11,6 +11,12 @@ from claude_switch.config import config_manager
 
 def list_configs_impl() -> None:
     """列出所有配置及详情"""
+    load_error = config_manager.get_load_error()
+    if load_error:
+        print(f"[red]✗[/red] 配置文件加载失败: {load_error}")
+        print("[yellow]![/yellow] 请使用 'ccs edit' 修复配置文件后重试")
+        return
+
     configs = config_manager.list_configs()
 
     if not configs:

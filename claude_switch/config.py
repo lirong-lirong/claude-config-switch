@@ -93,6 +93,7 @@ class ConfigManager:
 
         self._configs: Dict[str, ClaudeConfig] = {}
         self._default_config: str = ""
+        self._load_error: Optional[str] = None
         self._load_configs()
 
     def _load_configs(self):
@@ -118,8 +119,9 @@ class ConfigManager:
                             config.add_model(model_config)
 
                         self._configs[name] = config
-            except (json.JSONDecodeError, KeyError, TypeError):
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
                 # 如果配置文件损坏，重新初始化
+                self._load_error = str(e)
                 self._configs = {}
                 self._default_config = ""
 
@@ -189,6 +191,10 @@ class ConfigManager:
     def get_config_file_path(self) -> str:
         """获取配置文件路径"""
         return str(self.config_file)
+
+    def get_load_error(self) -> Optional[str]:
+        """获取配置加载错误信息"""
+        return self._load_error
 
     def save_configs(self):
         """保存配置到文件（公开方法）"""
