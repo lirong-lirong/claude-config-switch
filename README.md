@@ -8,7 +8,7 @@
 - ✅ 支持为每个API配置多个模型
 - ✅ 快速切换配置和模型启动Claude Code
 - ✅ 查看当前环境变量配置
-- ✅ 安全的配置存储（JSON文件）
+- ✅ 安全的配置存储（YAML文件）
 - ✅ 美观的命令行界面（Rich）
 - ✅ 自动环境变量配置（PATH）
 - ✅ 智能安装脚本
@@ -62,7 +62,7 @@ source ~/.zshrc  # 或 source ~/.bashrc
 
 ## 使用方法
 
-所有配置管理都通过 `edit` 命令直接编辑 JSON 配置文件完成。
+所有配置管理都通过 `edit` 命令直接编辑 YAML 配置文件完成。
 
 ```bash
 # 编辑配置文件（如果不存在会自动创建示例配置）
@@ -120,7 +120,6 @@ echo "Hello" | claude-switch run deepseek --args "--print --debug"
 
 每个配置包含以下字段：
 
-- `name`: 配置名称（唯一标识）
 - `api_key`: API密钥
 - `base_url`: API基础URL
 - `timeout_ms`: 超时时间（毫秒）
@@ -131,8 +130,7 @@ echo "Hello" | claude-switch run deepseek --args "--print --debug"
 
 每个模型配置包含：
 
-- `name`: 模型名称
-- `model`: 模型ID
+- `model_id`: 模型ID
 - `small_fast_model`: 快速小模型ID（可选）
 - `description`: 模型描述
 
@@ -161,7 +159,6 @@ echo "Hello" | claude-switch run deepseek --args "--print --debug"
 default_config: deepseek
 configs:
   deepseek:
-    name: deepseek
     api_key: sk-xxx
     base_url: https://api.deepseek.com/anthropic
     timeout_ms: 600000
@@ -169,23 +166,19 @@ configs:
     description: DeepSeek API
     models:
       chat:
-        name: chat
-        model: deepseek-chat
+        model_id: deepseek-chat
         small_fast_model: ''
         description: DeepSeek Chat模型
       reasoner:
-        name: reasoner
-        model: deepseek-reasoner
+        model_id: deepseek-reasoner
         small_fast_model: deepseek-chat
         description: DeepSeek Reasoner模型
       coder:
-        name: coder
-        model: deepseek-coder
+        model_id: deepseek-coder
         small_fast_model: ''
         description: DeepSeek Coder模型
     default_model: reasoner
   anthropic:
-    name: anthropic
     api_key: sk-ant-xxx
     base_url: https://api.anthropic.com
     timeout_ms: 600000
@@ -193,13 +186,11 @@ configs:
     description: Anthropic官方API
     models:
       sonnet:
-        name: sonnet
-        model: claude-3-5-sonnet-20241022
+        model_id: claude-3-5-sonnet-20241022
         small_fast_model: claude-3-haiku-20240307
         description: Claude 3.5 Sonnet
       opus:
-        name: opus
-        model: claude-3-opus-20240229
+        model_id: claude-3-opus-20240229
         small_fast_model: claude-3-haiku-20240307
         description: Claude 3 Opus
     default_model: sonnet
